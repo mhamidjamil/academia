@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from 'react';
+import Link from 'next/link';
 import {
   Bell,
   BookUser,
@@ -91,14 +92,16 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
             <SidebarMenu>
               {currentNavItems.map((item) => (
                 <SidebarMenuItem key={item.href}>
-                  <SidebarMenuButton
-                    href={item.href}
-                    isActive={pathname === item.href}
-                    tooltip={item.label}
-                  >
-                    {item.icon}
-                    <span>{item.label}</span>
-                  </SidebarMenuButton>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={pathname === item.href}
+                      tooltip={item.label}
+                    >
+                      <Link href={item.href}>
+                        {item.icon}
+                        <span>{item.label}</span>
+                      </Link>
+                    </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
@@ -106,9 +109,11 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
           <SidebarFooter>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton href="/dashboard/settings" tooltip="Settings">
-                  <Settings />
-                  <span>Settings</span>
+                <SidebarMenuButton asChild tooltip="Settings" isActive={pathname === '/dashboard/settings'}>
+                    <Link href="/dashboard/settings">
+                        <Settings />
+                        <span>Settings</span>
+                    </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>

@@ -25,10 +25,11 @@ import { ROLES, users } from '@/lib/mock-data';
 import type { UserRole } from '@/lib/types';
 import { GraduationCap } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { role, setRole, user } = useRole();
+  const { role, setRole, user, isMounted } = useRole();
   const [selectedRole, setSelectedRole] = React.useState<UserRole>(role);
 
   const handleLogin = () => {
@@ -37,6 +38,34 @@ export default function LoginPage() {
   };
 
   const selectedUser = users.find(u => u.role === selectedRole);
+
+  if (!isMounted) {
+    return (
+        <div className="flex min-h-screen items-center justify-center bg-background p-4">
+            <Card className="w-full max-w-sm">
+                <CardHeader className="text-center">
+                    <div className="mx-auto mb-4 flex items-center gap-2">
+                        <GraduationCap className="h-8 w-8 text-primary" />
+                        <span className="font-headline text-2xl font-bold">Academia Center</span>
+                    </div>
+                    <CardTitle>Welcome Back!</CardTitle>
+                    <CardDescription>Select a role to sign in to your dashboard.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="role">Select Your Role</Label>
+                         <Skeleton className="h-10 w-full" />
+                    </div>
+                    <Skeleton className="h-[88px] w-full" />
+                </CardContent>
+                <CardFooter className="flex flex-col gap-4">
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-6 w-24" />
+                </CardFooter>
+            </Card>
+        </div>
+    )
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
