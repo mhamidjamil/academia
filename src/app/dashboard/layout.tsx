@@ -8,11 +8,12 @@ import {
   FileText,
   Home,
   LineChart,
+  LogOut,
   Settings,
   Users,
   Percent,
 } from 'lucide-react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { RoleProvider, useRole } from '@/contexts/RoleContext';
 import {
   SidebarProvider,
@@ -69,8 +70,15 @@ const navItems: Record<UserRole, { href: string; icon: React.ReactNode; label: s
 
 function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { role, user } = useRole();
+  const router = useRouter();
+  const { role, user, setRole } = useRole();
   const currentNavItems = navItems[role];
+
+  const handleLogout = () => {
+    // In a real app, you'd clear tokens/session here
+    setRole('Admin'); // Reset to a default role
+    router.push('/login');
+  };
 
   return (
     <SidebarProvider>
@@ -134,7 +142,10 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                   <DropdownMenuItem>Profile</DropdownMenuItem>
                   <DropdownMenuItem>Settings</DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>Log out</DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleLogout}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Log out
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
