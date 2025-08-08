@@ -3,6 +3,7 @@ import { Inter, Space_Grotesk } from 'next/font/google';
 import './globals.css';
 import { cn } from '@/lib/utils';
 import { Toaster } from "@/components/ui/toaster";
+import { RoleProvider } from '@/contexts/RoleContext';
 
 const fontBody = Inter({
   subsets: ['latin'],
@@ -33,7 +34,9 @@ export default function RootLayout({
           fontHeadline.variable
         )}
       >
-        {children}
+        <RoleProvider>
+          {children}
+        </RoleProvider>
         <Toaster />
       </body>
     </html>

@@ -14,7 +14,7 @@ import {
   Percent,
 } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
-import { RoleProvider, useRole } from '@/contexts/RoleContext';
+import { useRole } from '@/contexts/RoleContext';
 import {
   SidebarProvider,
   Sidebar,
@@ -159,8 +159,6 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     return (
-        <RoleProvider>
-            <DashboardLayoutContent>{children}</DashboardLayoutContent>
-        </RoleProvider>
+        <DashboardLayoutContent>{children}</DashboardLayoutContent>
     )
 }
