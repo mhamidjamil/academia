@@ -30,7 +30,7 @@ import {
 } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { MoreHorizontal, PlusCircle } from 'lucide-react';
-import { students, classes } from '@/lib/mock-data';
+import { students as mockStudents, classes as mockClasses } from '@/lib/mock-data';
 import type { Student, SchoolClass } from '@/lib/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -38,12 +38,156 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useToast } from '@/hooks/use-toast';
+import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+
+const StudentDialog = ({ student, classes, onSave, onClose }: { student?: Student, classes: SchoolClass[], onSave: (student: Student) => void, onClose: () => void }) => {
+  const [name, setName] = useState(student?.name || '');
+  const [studentId, setStudentId] = useState(student?.studentId || '');
+  const [classId, setClassId] = useState(student?.classId || '');
+
+  const handleSubmit = () => {
+    const newStudent: Student = {
+      id: student?.id || `stu-${Date.now()}`,
+      name,
+      studentId,
+      classId,
+      sectionId: 'sec-1a', // Default for simplicity
+      avatarUrl: student?.avatarUrl || 'https://placehold.co/100x100'
+    };
+    onSave(newStudent);
+  };
+
+  return (
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle>{student ? 'Edit' : 'Add'} Student</DialogTitle>
+      </DialogHeader>
+      <div className="grid gap-4 py-4">
+        <div className="grid grid-cols-4 items-center gap-4">
+          <Label htmlFor="name" className="text-right">Name</Label>
+          <Input id="name" value={name} onChange={e => setName(e.target.value)} className="col-span-3" />
+        </div>
+        <div className="grid grid-cols-4 items-center gap-4">
+          <Label htmlFor="studentId" className="text-right">Student ID</Label>
+          <Input id="studentId" value={studentId} onChange={e => setStudentId(e.target.value)} className="col-span-3" />
+        </div>
+        <div className="grid grid-cols-4 items-center gap-4">
+          <Label htmlFor="class" className="text-right">Class</Label>
+          <Select value={classId} onValueChange={setClassId}>
+            <SelectTrigger className="col-span-3">
+              <SelectValue placeholder="Select a class" />
+            </SelectTrigger>
+            <SelectContent>
+              {classes.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+      <DialogFooter>
+        <Button variant="outline" onClick={onClose}>Cancel</Button>
+        <Button onClick={handleSubmit}>Save</Button>
+      </DialogFooter>
+    </DialogContent>
+  );
+};
+
+const ClassDialog = ({ schoolClass, onSave, onClose }: { schoolClass?: SchoolClass, onSave: (schoolClass: SchoolClass) => void, onClose: () => void }) => {
+    const [name, setName] = useState(schoolClass?.name || '');
+    const [sections, setSections] = useState(schoolClass?.sections.map(s => s.name).join(', ') || '');
+
+    const handleSubmit = () => {
+        const newClass: SchoolClass = {
+            id: schoolClass?.id || `class-${Date.now()}`,
+            name,
+            sections: sections.split(',').map((s, i) => ({ id: `sec-${Date.now()}-${i}`, name: s.trim() }))
+        };
+        onSave(newClass);
+    };
+
+    return (
+        <DialogContent>
+            <DialogHeader>
+                <DialogTitle>{schoolClass ? 'Edit' : 'Add'} Class</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="name" className="text-right">Class Name</Label>
+                    <Input id="name" value={name} onChange={e => setName(e.target.value)} className="col-span-3" />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="sections" className="text-right">Sections</Label>
+                    <Input id="sections" placeholder="A, B, C" value={sections} onChange={e => setSections(e.target.value)} className="col-span-3" />
+                </div>
+            </div>
+            <DialogFooter>
+                <Button variant="outline" onClick={onClose}>Cancel</Button>
+                <Button onClick={handleSubmit}>Save</Button>
+            </DialogFooter>
+        </DialogContent>
+    );
+}
 
 export default function StudentsPage() {
-  const [allStudents, setAllStudents] = useState<Student[]>(students);
-  const [allClasses, setAllClasses] = useState<SchoolClass[]>(classes);
+  const [allStudents, setAllStudents] = useState<Student[]>(mockStudents);
+  const [allClasses, setAllClasses] = useState<SchoolClass[]>(mockClasses);
+  const [activeTab, setActiveTab] = useState('students');
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingStudent, setEditingStudent] = useState<Student | undefined>(undefined);
+  const [editingClass, setEditingClass] = useState<SchoolClass | undefined>(undefined);
+  const { toast } = useToast();
+
+  const handleSaveStudent = (student: Student) => {
+    const isEditing = allStudents.some(s => s.id === student.id);
+    if (isEditing) {
+      setAllStudents(allStudents.map(s => s.id === student.id ? student : s));
+      toast({ title: "Student Updated", description: `${student.name} has been updated.` });
+    } else {
+      setAllStudents([...allStudents, student]);
+      toast({ title: "Student Added", description: `${student.name} has been added.` });
+    }
+    closeDialog();
+  };
+
+  const handleDeleteStudent = (studentId: string) => {
+    setAllStudents(allStudents.filter(s => s.id !== studentId));
+    toast({ title: "Student Deleted", variant: 'destructive' });
+  };
+  
+  const handleSaveClass = (schoolClass: SchoolClass) => {
+    const isEditing = allClasses.some(c => c.id === schoolClass.id);
+    if (isEditing) {
+        setAllClasses(allClasses.map(c => c.id === schoolClass.id ? schoolClass : c));
+        toast({ title: "Class Updated", description: `${schoolClass.name} has been updated.` });
+    } else {
+        setAllClasses([...allClasses, schoolClass]);
+        toast({ title: "Class Added", description: `${schoolClass.name} has been added.` });
+    }
+    closeDialog();
+  };
+
+  const handleDeleteClass = (classId: string) => {
+      setAllClasses(allClasses.filter(c => c.id !== classId));
+      toast({ title: "Class Deleted", variant: 'destructive' });
+  };
+
+  const openDialog = (item?: Student | SchoolClass) => {
+    if (activeTab === 'students') {
+        setEditingStudent(item as Student | undefined);
+    } else {
+        setEditingClass(item as SchoolClass | undefined);
+    }
+    setIsDialogOpen(true);
+  };
+
+  const closeDialog = () => {
+    setIsDialogOpen(false);
+    setEditingStudent(undefined);
+    setEditingClass(undefined);
+  };
 
   return (
     <div className="space-y-6">
@@ -52,30 +196,19 @@ export default function StudentsPage() {
         <p className="text-muted-foreground">View, add, and manage students and classes.</p>
       </div>
 
-      <Tabs defaultValue="students">
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
         <div className="flex justify-between items-center">
           <TabsList>
             <TabsTrigger value="students">Students</TabsTrigger>
             <TabsTrigger value="classes">Classes</TabsTrigger>
           </TabsList>
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button>
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Add New
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-               <DialogHeader>
-                <DialogTitle>Add New Student/Class</DialogTitle>
-                <DialogDescription>Fill in the details below.</DialogDescription>
-              </DialogHeader>
-              {/* Add form here */}
-            </DialogContent>
-          </Dialog>
+          <Button onClick={() => openDialog()}>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            {activeTab === 'students' ? 'Add Student' : 'Add Class'}
+          </Button>
         </div>
         <TabsContent value="students">
-          <div className="border rounded-lg">
+          <Card>
             <Table>
               <TableHeader>
                 <TableRow>
@@ -83,7 +216,7 @@ export default function StudentsPage() {
                   <TableHead>Student ID</TableHead>
                   <TableHead>Class</TableHead>
                   <TableHead>Section</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -104,7 +237,7 @@ export default function StudentsPage() {
                       <TableCell>{student.studentId}</TableCell>
                       <TableCell>{studentClass?.name || 'N/A'}</TableCell>
                       <TableCell>{studentSection?.name || 'N/A'}</TableCell>
-                      <TableCell>
+                      <TableCell className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" className="h-8 w-8 p-0">
@@ -114,9 +247,9 @@ export default function StudentsPage() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuItem>Edit</DropdownMenuItem>
-                            <DropdownMenuItem>View Details</DropdownMenuItem>
-                            <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => openDialog(student)}>Edit</DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => handleDeleteStudent(student.id)} className="text-destructive">Delete</DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
@@ -125,17 +258,17 @@ export default function StudentsPage() {
                 })}
               </TableBody>
             </Table>
-          </div>
+          </Card>
         </TabsContent>
         <TabsContent value="classes">
-          <div className="border rounded-lg">
+          <Card>
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Class Name</TableHead>
                   <TableHead>Sections</TableHead>
                   <TableHead>Number of Students</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -144,7 +277,7 @@ export default function StudentsPage() {
                     <TableCell className="font-medium">{sClass.name}</TableCell>
                     <TableCell>{sClass.sections.map(s => s.name).join(', ')}</TableCell>
                     <TableCell>{allStudents.filter(s => s.classId === sClass.id).length}</TableCell>
-                    <TableCell>
+                    <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" className="h-8 w-8 p-0">
@@ -154,9 +287,9 @@ export default function StudentsPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem>Edit</DropdownMenuItem>
-                          <DropdownMenuItem>View Students</DropdownMenuItem>
-                          <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => openDialog(sClass)}>Edit</DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => handleDeleteClass(sClass.id)} className="text-destructive">Delete</DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -164,9 +297,16 @@ export default function StudentsPage() {
                 ))}
               </TableBody>
             </Table>
-          </div>
+          </Card>
         </TabsContent>
       </Tabs>
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        {activeTab === 'students' ? (
+          <StudentDialog student={editingStudent} classes={allClasses} onSave={handleSaveStudent} onClose={closeDialog} />
+        ) : (
+          <ClassDialog schoolClass={editingClass} onSave={handleSaveClass} onClose={closeDialog} />
+        )}
+      </Dialog>
     </div>
   );
 }

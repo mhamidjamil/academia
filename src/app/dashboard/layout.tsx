@@ -64,8 +64,8 @@ const navItems: Record<UserRole, { href: string; icon: React.ReactNode; label: s
     { href: '/dashboard', icon: <Home />, label: 'Dashboard' },
     { href: '/dashboard/marksheet', icon: <FileText />, label: "Child's Marksheet" },
   ],
-  Librarian: [{ href: '/dashboard', icon: <Home />, label: 'Dashboard' }, { href: '#', icon: <BookUser />, label: 'Library' }],
-  Accountant: [{ href: '/dashboard', icon: <Home />, label: 'Dashboard' }, { href: '#', icon: <LineChart />, label: 'Fees' }],
+  Librarian: [{ href: '/dashboard', icon: <Home />, label: 'Dashboard' }, { href: '/dashboard/library', icon: <BookUser />, label: 'Library' }],
+  Accountant: [{ href: '/dashboard', icon: <Home />, label: 'Dashboard' }, { href: '/dashboard/fees', icon: <LineChart />, label: 'Fees' }],
 };
 
 function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
@@ -106,7 +106,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
           <SidebarFooter>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton href="#" tooltip="Settings">
+                <SidebarMenuButton href="/dashboard/settings" tooltip="Settings">
                   <Settings />
                   <span>Settings</span>
                 </SidebarMenuButton>
@@ -139,8 +139,8 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>Profile</DropdownMenuItem>
-                  <DropdownMenuItem>Settings</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => router.push('/dashboard/settings')}>Profile</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => router.push('/dashboard/settings')}>Settings</DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout}>
                     <LogOut className="mr-2 h-4 w-4" />
