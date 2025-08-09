@@ -55,3 +55,13 @@ export interface Notice {
   date: Date;
   author: string;
 }
+
+export interface Fee {
+  id: string;
+  studentId: string;
+  amount: number;
+  status: 'Paid' | 'Due' | 'Overdue';
+  dueDate: Date;
+  paidDate?: Date;
+  invoiceNumber: string;
+}

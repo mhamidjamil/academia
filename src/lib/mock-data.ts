@@ -1,4 +1,4 @@
-import type { User, Student, SchoolClass, Subject, Exam, Grade, Notice, UserRole } from './types';
+import type { User, Student, SchoolClass, Subject, Exam, Grade, Notice, UserRole, Fee } from './types';
 
 export const users: User[] = [
   { id: 'user-1', name: 'Admin User', email: 'admin@academia.edu', role: 'Admin', avatarUrl: 'https://placehold.co/100x100' },
@@ -82,5 +82,15 @@ export const notices: Notice[] = [
   { id: 'notice-2', title: 'Science Fair Announcement', content: 'Annual science fair submissions are open. Please register by the end of this month.', date: new Date(new Date().setDate(new Date().getDate() + 2)), author: 'Admin User' },
   { id: 'notice-3', title: 'School Holiday', content: 'The school will be closed on Monday for a public holiday.', date: new Date(new Date().setDate(new Date().getDate() - 5)), author: 'Admin User' },
 ];
+
+export const fees: Fee[] = [
+    { id: 'fee-1', studentId: 'stu-1', amount: 500, status: 'Paid', dueDate: new Date(2024, 6, 30), paidDate: new Date(2024, 6, 15), invoiceNumber: 'INV-2024-001' },
+    { id: 'fee-2', studentId: 'stu-2', amount: 500, status: 'Due', dueDate: new Date(2024, 6, 30), invoiceNumber: 'INV-2024-002' },
+    { id: 'fee-3', studentId: 'stu-3', amount: 500, status: 'Overdue', dueDate: new Date(2024, 5, 30), invoiceNumber: 'INV-2024-003' },
+    { id: 'fee-4', studentId: 'stu-4', amount: 600, status: 'Paid', dueDate: new Date(2024, 6, 30), paidDate: new Date(2024, 6, 20), invoiceNumber: 'INV-2024-004' },
+    { id: 'fee-5', studentId: 'stu-5', amount: 600, status: 'Due', dueDate: new Date(2024, 6, 30), invoiceNumber: 'INV-2024-005' },
+    { id: 'fee-6', studentId: 'stu-6', amount: 700, status: 'Paid', dueDate: new Date(2024, 6, 30), paidDate: new Date(2024, 6, 25), invoiceNumber: 'INV-2024-006' },
+];
+
 
 export const ROLES: UserRole[] = ['Admin', 'Teacher', 'Student', 'Parent', 'Librarian', 'Accountant'];

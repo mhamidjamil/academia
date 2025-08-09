@@ -41,6 +41,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Logo } from '@/components/icons';
 import { Skeleton } from '@/components/ui/skeleton';
+import { RoleSwitcher } from '@/components/dashboard/RoleSwitcher';
 
 const navItems: Record<UserRole, { href: string; icon: React.ReactNode; label: string }[]> = {
   Admin: [
@@ -49,6 +50,8 @@ const navItems: Record<UserRole, { href: string; icon: React.ReactNode; label: s
     { href: '/dashboard/exams', icon: <ClipboardList />, label: 'Exams' },
     { href: '/dashboard/grading', icon: <Percent />, label: 'Grade Adjustment' },
     { href: '/dashboard/marksheet', icon: <FileText />, label: 'Marksheets' },
+    { href: '/dashboard/fees', icon: <LineChart />, label: 'Fees' },
+    { href: '/dashboard/library', icon: <BookUser />, label: 'Library' },
   ],
   Teacher: [
     { href: '/dashboard', icon: <Home />, label: 'Dashboard' },
@@ -72,7 +75,7 @@ const navItems: Record<UserRole, { href: string; icon: React.ReactNode; label: s
 function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, logout, isMounted } = useAuth();
+  const { user, originalUser, logout, isMounted } = useAuth();
   
   React.useEffect(() => {
     if (isMounted && !user) {
@@ -80,7 +83,19 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
     }
   }, [user, isMounted, router]);
 
-  if (!isMounted || !user) {
+  const currentNavItems = user ? navItems[user.role] : [];
+  const isAuthorized = user && currentNavItems.some(item => item.href === pathname);
+  
+  React.useEffect(() => {
+    if (isMounted && user && !isAuthorized) {
+        // Allow access to settings page for all roles
+        if (pathname !== '/dashboard/settings') {
+           router.push('/dashboard');
+        }
+    }
+  }, [user, isMounted, router, pathname, isAuthorized]);
+
+  if (!isMounted || !user || !isAuthorized && pathname !== '/dashboard/settings') {
     return (
         <div className="flex min-h-screen">
              <div className="hidden md:flex flex-col gap-4 w-64 p-2 border-r">
@@ -100,8 +115,6 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
         </div>
     )
   }
-
-  const currentNavItems = navItems[user.role];
 
   return (
     <SidebarProvider>
@@ -137,7 +150,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                         <span>Settings</span>
                     </Link>
                 </SidebarMenuButton>
-              </SidebarMenuItem>
+              </MenuItem>
             </SidebarMenu>
           </SidebarFooter>
         </Sidebar>
@@ -145,6 +158,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
           <header className="no-print sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-background/80 px-4 backdrop-blur-sm sm:px-6">
             <SidebarTrigger />
             <div className="flex items-center gap-4">
+              {originalUser?.role === 'Admin' && <RoleSwitcher />}
               <Button variant="ghost" size="icon" className="rounded-full">
                 <Bell className="h-5 w-5" />
               </Button>
