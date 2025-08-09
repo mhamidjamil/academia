@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from 'react';
@@ -84,18 +85,23 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   }, [user, isMounted, router]);
 
   const currentNavItems = user ? navItems[user.role] : [];
-  const isAuthorized = user && (currentNavItems.some(item => pathname.startsWith(item.href)) || pathname === '/dashboard');
+  const isAuthorized = user && (currentNavItems.some(item => pathname === item.href) || pathname === '/dashboard');
   
   React.useEffect(() => {
     if (isMounted && user && !isAuthorized) {
         // Allow access to settings page for all roles
         if (pathname !== '/dashboard/settings') {
-           router.push('/dashboard');
+           // Redirect if not authorized, but check if the current path is a sub-path of an authorized route.
+           // e.g. /dashboard/students/new should be allowed if /dashboard/students is.
+           const isSubPathAuthorized = currentNavItems.some(item => pathname.startsWith(item.href + '/') && item.href !== '/dashboard');
+           if (!isSubPathAuthorized) {
+             router.push('/dashboard');
+           }
         }
     }
-  }, [user, isMounted, router, pathname, isAuthorized]);
+  }, [user, isMounted, router, pathname, isAuthorized, currentNavItems]);
 
-  if (!isMounted || !user || (!isAuthorized && pathname !== '/dashboard/settings')) {
+  if (!isMounted || !user || (!isAuthorized && pathname !== '/dashboard/settings' && !currentNavItems.some(item => pathname.startsWith(item.href + '/')))) {
     return (
         <div className="flex min-h-screen">
              <div className="hidden md:flex flex-col gap-4 w-64 p-2 border-r">
@@ -150,7 +156,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                         <span>Settings</span>
                     </Link>
                 </SidebarMenuButton>
-              </MenuItem>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarFooter>
         </Sidebar>
@@ -201,3 +207,5 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     return <DashboardLayoutContent>{children}</DashboardLayoutContent>;
 }
+
+    
