@@ -15,7 +15,7 @@ import {
   Percent,
 } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
-import { useRole } from '@/contexts/RoleContext';
+import { useAuth } from '@/contexts/RoleContext';
 import {
   SidebarProvider,
   Sidebar,
@@ -39,8 +39,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { RoleSwitcher } from '@/components/dashboard/RoleSwitcher';
 import { Logo } from '@/components/icons';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const navItems: Record<UserRole, { href: string; icon: React.ReactNode; label: string }[]> = {
   Admin: [
@@ -72,14 +72,36 @@ const navItems: Record<UserRole, { href: string; icon: React.ReactNode; label: s
 function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { role, user, setRole } = useRole();
-  const currentNavItems = navItems[role];
+  const { user, logout, isMounted } = useAuth();
+  
+  React.useEffect(() => {
+    if (isMounted && !user) {
+      router.push('/login');
+    }
+  }, [user, isMounted, router]);
 
-  const handleLogout = () => {
-    // In a real app, you'd clear tokens/session here
-    setRole('Admin'); // Reset to a default role
-    router.push('/login');
-  };
+  if (!isMounted || !user) {
+    return (
+        <div className="flex min-h-screen">
+             <div className="hidden md:flex flex-col gap-4 w-64 p-2 border-r">
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-8 w-full" />
+                <Skeleton className="h-8 w-full" />
+                <Skeleton className="h-8 w-full" />
+             </div>
+             <div className="flex-1">
+                <header className="sticky top-0 z-10 flex h-16 items-center justify-end border-b bg-background/80 px-4 backdrop-blur-sm sm:px-6">
+                    <Skeleton className="h-10 w-10 rounded-full" />
+                </header>
+                <main className="p-4 sm:p-6">
+                    <Skeleton className="h-64 w-full" />
+                </main>
+             </div>
+        </div>
+    )
+  }
+
+  const currentNavItems = navItems[user.role];
 
   return (
     <SidebarProvider>
@@ -123,7 +145,6 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
           <header className="no-print sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-background/80 px-4 backdrop-blur-sm sm:px-6">
             <SidebarTrigger />
             <div className="flex items-center gap-4">
-              <RoleSwitcher />
               <Button variant="ghost" size="icon" className="rounded-full">
                 <Bell className="h-5 w-5" />
               </Button>
@@ -147,7 +168,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                   <DropdownMenuItem onClick={() => router.push('/dashboard/settings')}>Profile</DropdownMenuItem>
                   <DropdownMenuItem onClick={() => router.push('/dashboard/settings')}>Settings</DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogout}>
+                  <DropdownMenuItem onClick={logout}>
                     <LogOut className="mr-2 h-4 w-4" />
                     Log out
                   </DropdownMenuItem>

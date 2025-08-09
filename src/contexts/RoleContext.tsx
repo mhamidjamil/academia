@@ -3,27 +3,48 @@
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import type { User, UserRole } from '@/lib/types';
 import { users } from '@/lib/mock-data';
+import { useRouter } from 'next/navigation';
 
 interface RoleContextType {
-  role: UserRole;
-  setRole: (role: UserRole) => void;
-  user: User;
+  user: User | null;
+  login: (email: string) => boolean;
+  logout: () => void;
   isMounted: boolean;
 }
 
 const RoleContext = createContext<RoleContextType | undefined>(undefined);
 
 export const RoleProvider = ({ children }: { children: ReactNode }) => {
-  const [role, setRole] = useState<UserRole>('Admin');
+  const [user, setUser] = useState<User | null>(null);
   const [isMounted, setIsMounted] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     setIsMounted(true);
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+        setUser(JSON.parse(storedUser));
+    }
   }, []);
+  
+  const login = (email: string): boolean => {
+    const foundUser = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+    if (foundUser) {
+        setUser(foundUser);
+        localStorage.setItem('user', JSON.stringify(foundUser));
+        return true;
+    }
+    return false;
+  };
 
-  const user = users.find(u => u.role === role) || users[0];
+  const logout = () => {
+    setUser(null);
+    localStorage.removeItem('user');
+    router.push('/login');
+  };
 
-  const value = { role, setRole, user, isMounted };
+
+  const value = { user, login, logout, isMounted };
 
   return (
     <RoleContext.Provider value={value}>
@@ -32,10 +53,10 @@ export const RoleProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-export const useRole = () => {
+export const useAuth = () => {
   const context = useContext(RoleContext);
   if (context === undefined) {
-    throw new Error('useRole must be used within a RoleProvider');
+    throw new Error('useAuth must be used within a RoleProvider');
   }
   return context;
 };

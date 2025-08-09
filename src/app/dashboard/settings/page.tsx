@@ -4,14 +4,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useRole } from "@/contexts/RoleContext";
+import { useAuth } from "@/contexts/RoleContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 
 export default function SettingsPage() {
-    const { user } = useRole();
+    const { user } = useAuth();
     const { toast } = useToast();
 
     const handleSaveChanges = () => {
@@ -20,6 +20,10 @@ export default function SettingsPage() {
             description: "Your settings have been updated.",
         });
     };
+
+    if (!user) {
+        return <div>Loading...</div>; // Or a skeleton loader
+    }
 
     return (
         <div className="space-y-6">

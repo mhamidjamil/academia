@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Users, BookOpen, ClipboardCheck, UserCheck } from "lucide-react";
-import { useRole } from "@/contexts/RoleContext";
+import { useAuth } from "@/contexts/RoleContext";
 import { students, classes, exams } from "@/lib/mock-data";
 
 export function AdminDashboard() {
@@ -136,9 +136,11 @@ export function GenericDashboard({ role }: { role: string }) {
 
 
 export function DashboardCards() {
-    const { role } = useRole();
+    const { user } = useAuth();
+    
+    if (!user) return null;
 
-    switch(role) {
+    switch(user.role) {
         case 'Admin':
             return <AdminDashboard />;
         case 'Teacher':
@@ -146,6 +148,6 @@ export function DashboardCards() {
         case 'Student':
             return <StudentDashboard />;
         default:
-            return <GenericDashboard role={role} />;
+            return <GenericDashboard role={user.role} />;
     }
 }

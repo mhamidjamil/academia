@@ -2,10 +2,12 @@
 
 import { DashboardCards } from "@/components/dashboard/DashboardCards";
 import { Noticeboard } from "@/components/dashboard/Noticeboard";
-import { useRole } from "@/contexts/RoleContext";
+import { useAuth } from "@/contexts/RoleContext";
 
 export default function DashboardPage() {
-  const { user } = useRole();
+  const { user } = useAuth();
+
+  if (!user) return null; // Or a loading spinner
 
   return (
     <div className="flex flex-col gap-6">

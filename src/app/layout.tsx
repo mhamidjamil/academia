@@ -35,7 +35,7 @@ export default function RootLayout({
         )}
       >
         <RoleProvider>
-          {children}
+            {children}
         </RoleProvider>
         <Toaster />
       </body>
