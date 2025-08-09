@@ -84,7 +84,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   }, [user, isMounted, router]);
 
   const currentNavItems = user ? navItems[user.role] : [];
-  const isAuthorized = user && currentNavItems.some(item => item.href === pathname);
+  const isAuthorized = user && (currentNavItems.some(item => pathname.startsWith(item.href)) || pathname === '/dashboard');
   
   React.useEffect(() => {
     if (isMounted && user && !isAuthorized) {
@@ -95,7 +95,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
     }
   }, [user, isMounted, router, pathname, isAuthorized]);
 
-  if (!isMounted || !user || !isAuthorized && pathname !== '/dashboard/settings') {
+  if (!isMounted || !user || (!isAuthorized && pathname !== '/dashboard/settings')) {
     return (
         <div className="flex min-h-screen">
              <div className="hidden md:flex flex-col gap-4 w-64 p-2 border-r">
@@ -197,8 +197,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
   );
 }
 
+
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-    return (
-        <DashboardLayoutContent>{children}</DashboardLayoutContent>
-    )
+    return <DashboardLayoutContent>{children}</DashboardLayoutContent>;
 }
